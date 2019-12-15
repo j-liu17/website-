@@ -14,6 +14,7 @@ knitr::opts_chunk$set(collapse = TRUE)
 
 My name is Joy! I was born in Dallas, Texas and I moved to Austin in 2016 for college. I graduated from the University of Texas at Austin with a Bachelor of Science and Arts in Biology and a certificate in Pre-Health Professions. I'm planning on attending the PA program at the University of Texas Medical Branch, starting in July 2020. I am really passionate about healthcare and also spreading education and awareness about current topics in medicine. In my spare time, I like to read and I have been learning how to cook.
 
+
 ## Education
 
 ### The University of Texas at Austin -- BSA, Biology
