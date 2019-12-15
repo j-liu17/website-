@@ -1,6 +1,6 @@
 ---
-title: "Hello R Markdown"
-author: "Frida Gomam"
+title: "About Me"
+author: "Joy"
 date: 2015-07-23T21:13:14-05:00
 categories: ["R"]
 tags: ["R Markdown", "plot", "regression"]
@@ -10,28 +10,44 @@ tags: ["R Markdown", "plot", "regression"]
 knitr::opts_chunk$set(collapse = TRUE)
 ```
 
-# R Markdown
+# About Me!
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+My name is Joy! I was born in Dallas, Texas and I moved to Austin in 2016 for college. I graduated from the University of Texas at Austin with a Bachelor of Science and Arts in Biology and a certificate in Pre-Health Professions. I'm planning on attending the PA program at the University of Texas Medical Branch, starting in July 2020. I am really passionate about healthcare and also spreading education and awareness about current topics in medicine. In my spare time, I like to read and I have been learning how to cook.
 
-You can embed an R code chunk like this:
+## Education
 
-```{r cars}
-summary(cars)
-fit <- lm(dist ~ speed, data = cars)
-fit
-```
+### The University of Texas at Austin -- BSA, Biology
+Fall 2016 - Fall 2019 -- Cumulative GPA: 3.60, Science GPA: 3.65
 
-# Including Plots
+### The University of Texas Medical Branch -- MPAS, Physician Assistant Studies Program
+Starting in July 2020
 
-You can also embed plots. See Figure \@ref(fig:pie) for example:
 
-```{r pie, fig.cap='A fancy pie chart.', tidy=FALSE}
-par(mar = c(0, 1, 0, 1))
-pie(
-  c(280, 60, 20),
-  c('Sky', 'Sunny side of pyramid', 'Shady side of pyramid'),
-  col = c('#0292D8', '#F7EA39', '#C4B632'),
-  init.angle = -50, border = NA
-)
-```
+## Work Experience
+
+### Surgery Center at Plano Dermatology -- Medical Assistant
+- Administered local numbing injections per the surgeon’s instructions
+- Assisted surgeons during Mohs procedures and excisions (blotting, cutting sutures, etc)
+- Bandaged patients post-operation and gave wound care instructions
+
+### Biobricks Research Lab -- Mentor 
+- Trained new research students on how to perform microbiology procedures
+- Graded lab reports and oversaw students in lab
+- Worked on an independent research project under the guidance of the research educator
+
+### KD College Prep -- Intern
+- Helped run day to day operations by creating daily schedules and organizing class materials
+- Led the training of new student workers and educated them on their responsibilities
+- Provided customer service to parents and students in person and on the phone
+
+
+## Skills 
+
+- Technical/Computer Skills: Familiar with Python (1 year), R (2 years)
+- Lab Skills: Training in microbiology lab (PCR, protein purification, SDS-PAGE, Western blot analysis)
+- Clinical Skills: Can administer local numbing injections, assist in Mohs surgeries and excisions
+- Languages: Fluent in Mandarin
+
+## Accomplishments 
+
+University Honors -- Fall 2016

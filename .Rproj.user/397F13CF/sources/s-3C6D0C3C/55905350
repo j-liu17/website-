@@ -5,13 +5,15 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "4279641884",
+    "hash" : "1872612260",
     "id" : "55905350",
-    "lastKnownWriteTime" : 1576366248,
-    "last_content_update" : 1576366248,
+    "lastKnownWriteTime" : 1576391393,
+    "last_content_update" : 1576391393781,
     "path" : "C:/Users/Joy Liu/Desktop/website/content/blog/2015-07-23-r-rmarkdown.Rmd",
     "project_path" : "content/blog/2015-07-23-r-rmarkdown.Rmd",
     "properties" : {
+        "cursorPosition" : "1,16",
+        "scrollLine" : "0"
     },
     "read_only" : false,
     "read_only_alternatives" : [

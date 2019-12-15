@@ -12,14 +12,12 @@
     
     
     <item>
-      <title>Hello R Markdown</title>
+      <title>About Me</title>
       <link>/blog/2015-07-23-r-rmarkdown/</link>
       <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
       
       <guid>/blog/2015-07-23-r-rmarkdown/</guid>
-      <description>R MarkdownThis is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-You can embed an R code chunk like this:
-summary(cars)## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
+      <description>About Me!My name is Joy! I was born in Dallas, Texas and I moved to Austin in 2016 for college. I graduated from the University of Texas at Austin with a Bachelor of Science and Arts in Biology and a certificate in Pre-Health Professions. I’m planning on attending the PA program at the University of Texas Medical Branch, starting in July 2020. I am really passionate about healthcare and also spreading education and awareness about current topics in medicine.</description>
     </item>
     
   </channel>
