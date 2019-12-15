@@ -1,0 +1,331 @@
+---
+title: "SDS 348 Project 2: Modeling"
+author: "Joy Liu (jl63765)"
+date: "November 26th, 2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r global_options, include=FALSE}
+library(knitr)
+library("formatR")
+opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, fig.width=8,tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+
+# Introduction
+
+For my second project, I decided to take a look at the dataset Arrests, found in the carData package. This dataset contains data about individuals who were arrested in Toronto for possession of marijuana. For each individual arrested, there are variables detailing the individual's race, age, sex, employment status, whether or not they are a citizen, the year they were arrested, the number of police databases on which the arrestee's name appeared, and whether they were released or not. I am mainly interested in seeing the effects of all the variables on whether someone is released or not, so I first converted the variable "released" into a binary variable; 0 = not released, 1 = released. 
+
+```{r}
+library(carData)
+library(tidyverse)
+arrests <- Arrests
+arrests <- arrests %>%
+  mutate(released = ifelse(released == "Yes",1,0)) # makes released binary 
+
+```
+
+# MANOVA Testing
+
+```{r}
+
+# testing whether previous checks and age influence being released or not
+manovadata <- arrests %>%
+  mutate(released = ifelse(released == 1,"yes","no")) # convert released back into nonbinary 
+
+man1 <- manova(cbind(age, checks)~released, data=manovadata)
+summary(man1)
+
+#univariate anovas
+summary.aov(man1)
+
+1 - 0.95^3
+
+0.05 / 3
+
+```
+
+I did 1 MANOVA and 2 ANOVAs, but no t-tests because I was looking at a categorical predictor with 2 levels and the ANOVAs told me that they were significant. The probability of at least one type 1 error is 1 - 0.95^3, or 0.146. The new significance level was adjusted to 0.05 / 3, which is 0.017. Even with this significance level, all the tests are significant. Both age and previous checks show a mean difference across whether someone is released or not. Not all of the assumptions are likely to have been met -- it is unlikely that all the covariances of all the groups were equal. 
+
+# Randomization Test
+
+```{r}
+
+# want to know if there is association between released and checks  
+
+select<-dplyr::select
+
+randomization <- arrests %>%
+  select("released", "checks") %>%
+  mutate(released = ifelse(released == 1,"yes","no"))
+
+ggplot(randomization,aes(checks,fill=released))+geom_histogram()+facet_wrap(~released)
+
+t.test(data=randomization,checks~released)
+
+# actual mean difference between groups: 2.483184-1.462160
+
+
+
+rand_dist<-vector()
+for(i in 1:5000){
+  new<-data.frame(checks=sample(randomization$checks),released=randomization$released)
+  rand_dist[i]<-mean(new[new$released=="yes",]$checks)-mean(new[new$released=="no",]$checks)}
+
+hist(rand_dist)
+
+mean(rand_dist > (2.483184-1.462160)) * 2
+
+
+```
+ 
+I wanted to see if there was difference in the number of checks for people who were released and people who were not released. I decided to perform a permutation test. 
+
+H0: Mean number of previous checks is the same for whether a person was released or not.
+Ha: Mean number of previous checks is different for whether a person was released or not. 
+
+After creating a random distribution and comparing it to the original mean difference taken from the t-test, the p-value was 0.
+
+# Linear Regression Model
+
+### Model
+
+```{r}
+
+linearfit <- lm(released ~ colour * employed, data = arrests)
+summary(linearfit)
+
+```
+
+The intercept for colourWhite means that holding all other variables constant, if you are white and not black, your chances of getting released goes up by 0.120. Holding all other variables constant, if you are employed, your chances of getting released goes up by 0.190. The difference in slopes between colour and employed is 0.029, which is not significant. 
+
+### Regression plot
+
+```{R}
+
+ggplot(arrests, aes(x=employed, y=released,group=colour))+geom_point(aes(color=colour))+
+ geom_smooth(method="lm",formula=y~1,se=F,fullrange=T,aes(color=colour))+
+theme(legend.position=c(.9,.19))+xlab("")
+
+
+```
+
+This plot further serves as proof that there is no interaction between the variables, as the lines are parallel. 
+
+### Assumptions of linearity, normality, and homoskedasticity 
+
+``` {R}
+
+ggplot(arrests, aes(colour, released)) + geom_point()
+
+ggplot(arrests, aes(employed, released)) + geom_point()
+
+```
+
+From the graphs, it appears that the data violates all of the assumptions of linearity, normality, and homoskedasticity, which makes sense, as this is all categorical data.
+
+
+### Recompute regression results with robust SEs
+
+```{R}
+
+library(lmtest)
+library(sandwich)
+
+coeftest(linearfit, vcov = vcovHC(linearfit))
+
+summary(linearfit)
+
+```
+
+After recomputing the regression results with robust standard errors, it appears that colour and employment status are still both significant predictors of whether someone is released or not. The interaction between these two variables is still not significant, which matches the previous model that didn't use robust standard errors. The robust SEs are larger than that the SEs of the original model. 
+
+This model explains 5.17% of the variation in the outcome. 
+
+
+### Regression rerun without interactions
+
+``` {R}
+
+linearfit <- lm(released ~ colour + employed, data = arrests)
+summary(linearfit)
+
+```
+
+# Linear Regression With Bootstrapped SEs
+
+```{R}
+
+fit <- lm(released ~ colour * employed, data = arrests)
+
+samp_distn<-replicate(5000, {
+ boot_dat<-arrests[sample(nrow(arrests),replace=TRUE),]
+ fit<-lm(released ~ colour * employed,data=boot_dat)
+ coef(fit)
+})
+
+samp_distn%>%t%>%as.data.frame%>%summarize_all(sd)
+
+```
+
+The bootstrapped standard errors are slightly larger than the original SEs and the robust SEs. In all of the various models, both colour and employed are significant, but their interaction is not. 
+
+
+# Logistic Regression Model
+
+### Model and Coefficient Interpretations 
+
+```{R}
+
+logfit <- glm(released ~ colour + employed + checks, data = arrests, family = "binomial")
+coeftest(logfit)
+exp(coeftest(logfit))
+
+```
+
+Based on this logistic regression, if you are white, your odds of being released are multiplied by 1.645. Being employed multiplies your odds of being released by 2.176, while each previous check multiplies odds of release by 0.699. 
+
+### Confusion matrix, accuracy, sensitivity, specificity, and recall
+
+```{R}
+arrests_mod <- arrests
+arrests_mod$prob <- predict(logfit, type = "response")
+table(predict = as.numeric(arrests_mod$prob > .5), truth = arrests$released) %>% addmargins
+
+(57 + 4278) / 5226 # accuracy
+
+4278 / 4334 # sensitivity (TPR)
+
+57 / 892 # specificity (TNR)
+
+4278 / 5113 # recall (PPV)
+
+```
+
+The above table is a confusion matrix for the model just created, with the cutoff set at 0.5. The accuracy is 0.82, the sensitivity is 0.99, the specificity is 0.06, and the recall is 0.84. It seems that this model is relatively accurate and sensitive, but not very specific. 
+
+### Density of Log-Odds by Released
+
+```{R}
+
+arrests_mod <- arrests_mod %>%
+  mutate(logodds = log(prob / (1 - prob)))
+
+ggplot(arrests_mod, aes(released, logodds))+geom_point(aes(color=released),alpha=.5,size=3)
+
+```
+
+### ROC Curve & AUC
+
+```{R}
+library(plotROC)
+arrests_roc <- ggplot(arrests_mod)+geom_roc(aes(d=released,m=prob), n.cuts=0) 
+arrests_roc
+calc_auc(arrests_roc)
+
+```
+
+The AUC is 0.715, which is classified as fair. 
+
+### 10-fold CV
+
+```{R}
+class_diag<-function(probs,truth){
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+
+newarrests <- arrests %>%
+  select(released, colour, employed, checks)
+
+k=10
+
+data1<-newarrests[sample(nrow(newarrests)),] 
+folds<-cut(seq(1:nrow(newarrests)),breaks=k,labels=F) 
+
+diags<-NULL
+for(i in 1:k){ 
+  train<-data1[folds!=i,] 
+  test<-data1[folds==i,] 
+  truth<-test$released
+  
+  newarrestsfit <- glm(released ~ ., data = train, family = "binomial")
+  probs <- predict(newarrestsfit, newdata = test, type = "response")
+  
+  diags<-rbind(diags,class_diag(probs,truth)) 
+}
+
+apply(diags,2,mean)
+
+
+```
+
+The average out of sample accuracy is 0.803. The average out of sample sensitivty is 0.987. The average out of sample recall is 0.837. 
+
+# LASSO Regression
+
+```{R}
+
+library(glmnet)
+
+arrestsfit <- glm(released ~ ., data = arrests, family = "binomial")
+
+y <- as.matrix(arrests$released)
+x <- model.matrix(arrestsfit)
+x <- x[,-1]
+
+cv <- cv.glmnet(x, y, family = "binomial")
+lasso <- glmnet(x, y, lambda = cv$lambda.1se, family = "binomial")
+coef(lasso)
+
+```
+
+The LASSO regression shows that the variables colour, employed, citizen, and checks should be retained. This indicates that these variables best predict whether or not a person will be released. 
+
+
+``` {R}
+
+k=10
+
+data1<-arrests[sample(nrow(arrests)),] 
+folds<-cut(seq(1:nrow(arrests)),breaks=k,labels=F) 
+
+diags<-NULL
+for(i in 1:k){ 
+  train<-data1[folds!=i,] 
+  test<-data1[folds==i,] 
+  truth<-test$released
+  
+  lassofit <- glm(released ~ colour + employed + citizen + checks, data = train, family = "binomial")
+  probs <- predict(lassofit, newdata = test, type = "response")
+  
+  diags<-rbind(diags,class_diag(probs,truth)) 
+}
+
+apply(diags,2,mean)
+
+```
+
+This model's out-of-sample accuracy, 0.723, is similar to the one from my logistic regression, which was 0.715. This means that my original model wasn't overfitting the data too much, because the AUCs and the other values (sensitivity, specificity) are very similar. 

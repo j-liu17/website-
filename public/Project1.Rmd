@@ -1,0 +1,243 @@
+---
+title: "SDS 348 Project 1: Exploratory Data Analysis"
+author: "Joy Liu (jl63765)"
+date: "October 20th, 2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r global_options, include=FALSE}
+library(knitr)
+library("formatR")
+opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, fig.width=8,tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+
+# Introduction
+
+For my Exploratory Data Analysis, I decided to analyze how crime statistics in states may be affected by certain variables. The first dataset I chose was the state.x77 dataset from the carData package. This dataset contains all 50 states and gives various statistics for each one, including population estimates, per capita income, life expectancy, percent of high school graduates, and land area. The second dataset I chose was the USArrests dataset from the datasets package. USArrests contains for each state the number of arrests per 100,000 people for murder, assault, and rape. It also contains the percent urban population for each state. I also decided to include a third dataset called state.region, also from the carData package, which just gives the region of the United States each state is in. 
+
+These datasets were interesting to me because I wanted to see if education, region, and other factors would affect the amount of crime and the types of crimes committed in each state. I would expect that the percent urban population, rate of illiteracy, and percent of high school graduates are all correlated with higher amounts of crime. However, I am not sure whether they will have any effect on the type of crime committed. I also do not know if there will be differences based on region. 
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+
+# general state data (pop, live exp, illiteracy, murder)
+library(carData)
+state_gen <- state.x77
+
+# state arrest data 
+library(datasets)
+arrestdata <- USArrests
+
+# state region data 
+regiondata <- state.region
+
+```
+
+# Tidying
+
+```{r}
+# convert state_gen into a dataframe and make row names column 
+state_gen <- as.data.frame(state_gen)
+statedata <- state_gen %>% rownames_to_column("state")
+
+# remove murders from statedata because arrestdata will have murders 
+statedata <- statedata %>% select(-Murder)
+
+# make arrestdata row names to column 
+arrestdata <- arrestdata %>% rownames_to_column("state")
+
+# make regiondata a dataframe and give it states (it only had statistics, no labels)
+regiondata <- as.data.frame(regiondata)
+regiondata <- regiondata %>% mutate(state = statedata$state)
+regiondata <- regiondata %>% rename(region = regiondata)
+
+#tidying arrestdata
+arrest_tidy <- arrestdata %>% 
+  pivot_longer(cols = c("Murder", "Assault", "Rape"), names_to = "Crime_Type", values_to = "Arrests") %>%
+  rename(Urban_Pop = UrbanPop) %>%
+  mutate(Urban_Pop = as.numeric(Urban_Pop))
+glimpse(arrest_tidy)
+
+# untidying and tidying statedata 
+state_untidy <- statedata %>% pivot_longer(c("Population", "Income"), names_to = "Statistic", values_to = "Value")
+state_tidy <- state_untidy %>% pivot_wider(names_from = "Statistic", values_from = "Value")
+state_tidy <- state_tidy %>%
+  rename(Life_Exp = "Life Exp", HS_Grad = "HS Grad")
+glimpse(state_tidy)
+
+#untidying and tidying regiondata 
+region_untidy <- regiondata %>% pivot_wider(names_from = "state", values_from = "region")
+region_tidy <- region_untidy %>% pivot_longer(c(1:50),names_to = "state", values_to = "Region")
+glimpse(region_tidy)
+
+```
+
+In order to tidy my data, I first had to convert the state info dataset (state_gen) into a dataframe, because it was originally a matrix. Then, for both arrestdata and state_gen, I had to convert the row names, which were the states, into a column called "state" so I could work with them easier. I also removed the "Murders" column from statedata, as the other dataset already provided data on murders from a different year and I didn't want the two to conflict when I did a join. regiondata only contained a list of regions corresponding to the states in alphabetical order, so I had to create a new column with the states using mutate() so I could merge the datasets later on. I also had to convert regiondata from a matrix to a data frame. 
+
+For tidying arrestdata, I used pivot_longer() to create a variable called "crimetype" so that there weren't too many variables in columns that could be in just one column. For statedata and regiondata, the datasets were already tidy, so I used pivot_wider() to make the datasets unnecessarily untidy and hard to read, and pivot_longer() to make the datasets tidy again. 
+
+# Joining / Merging
+
+```{r}
+
+fulljoin_1 <- full_join(region_tidy, state_tidy, by = "state")
+fulljoin <- full_join(fulljoin_1, arrest_tidy, by = "state")
+glimpse(fulljoin)
+
+```
+
+I used full_join() to first join region_tidy and state_tidy by "state", which both datasets have in common. I then joined that intermediate dataset with arrest_tidy, again by "state", to create my final, full dataset. No cases were dropped, and subsequently I did not have to omit any NAs. I chose full_join() because the variables in my three datasets were very different and I didn't want to lose any of them; I wanted to retain all of my data. 
+
+# Wrangling
+
+### Total arrests per 100,000 people per state
+
+```{r}
+
+fulljoin <- fulljoin %>% 
+  group_by(state) %>%
+  mutate(Total_Crime = sum(Arrests))
+
+fulljoin %>% 
+  summarize(meantotalcrime = mean(Total_Crime)) %>% 
+  summarize(mean2 = mean(meantotalcrime))
+
+```
+
+### Most and least educated states by high school graduation rate 
+
+```{R}
+
+education <- fulljoin %>%
+  select(state, HS_Grad) %>%
+  arrange(HS_Grad) %>%
+  distinct() %>%
+  glimpse()
+ 
+education <- education %>% slice(1, n())
+
+```
+
+I first used mutate() to calculate the total number of arrests (rape, assault, and murder) per 100,000 people for each state by simply adding all the arrests for each state together. I then piped my new dataset into summarize twice to find the mean number of crimes per state, which was 199.78 crimes per 100,000 people. I also wanted to find the most and least educated states, based on their high school graduation rate. to do this, I took fulljoin and selected the states and their high school graduation rates, arranged from lowest to highest based on graduation rate, removed duplicates, and sliced it, taking the minimum and the maximum. The least educated state based on percentage of high school graduates is South Carolina, while the most educated state is Utah.
+
+
+### Summary statistics (mean, sd) by region 
+
+```{R}
+
+summary_stats_region <- fulljoin %>%
+  group_by(Region) %>% 
+  summarize(meanlife = mean(Life_Exp), sdlife = sd(Life_Exp), meancrime = mean(Total_Crime), sdcrime = sd(Total_Crime)) %>%
+  glimpse()
+
+```
+
+### Summary statistics for each type of crime
+
+```{R}
+
+summary_stats_crime_type <- fulljoin %>%
+  select(Crime_Type, Arrests) %>% 
+  group_by(Crime_Type) %>%
+  summarize(meancrime = mean(Arrests), sdcrime = sd(Arrests))%>% 
+  glimpse()
+
+```
+
+
+### Urban population and average crime rates
+
+```{R}
+# for states with more than 50% urban population, what's the average crimes/100k people vs states with less than 50%?
+
+summary_morethan <- fulljoin %>%
+  select(Urban_Pop, Total_Crime) %>%
+  filter(Urban_Pop > 50) %>%
+  summarize(morethan50mean = mean(Total_Crime)) %>% 
+  summarize(morethan50mean1 = mean(morethan50mean)) %>%
+  glimpse()
+
+summary_lessthan <- fulljoin %>%
+  select(Urban_Pop, Total_Crime) %>%
+  filter(Urban_Pop < 50) %>%
+  summarize(lessthan50mean = mean(Total_Crime)) %>%
+  summarize(lessthan50mean1 = mean(lessthan50mean)) %>%
+  glimpse()
+
+
+```
+
+I grouped by region of the United States and then calculated the mean and standard deviation of life expectancy and total crime. I found it interesting that the South has, on average, a lower mean life expectancy than the other three regions, which all are around 71 years. The standard deviations for life expectancy were quite small thogh, all about one year. Additionally, the South and the West have much higher crime rates than the Northeast and North Central areas of the country. However, those standard deviations were much higher (a range of 69-80 arrests). I was interested to see the mean number of assaults, murders, and rapes across the country. According to the summary statistics generated, assaults are the most common type of crime compared to murder and rape, with rape being the second most common and murder the least common. There is a huge disparity between the number of assults and the numbers of murders and rapes. The standard deviation for number of assaults per state is quite large (~83), but much smaller for murders and rapes. Finally, I wanted to see whether percent urban population had an effect on whether total crime was high or not. I filtered by urban populations that were under 50% and urban populations that were above 50% and found the mean total arrests for each grouping. For under 50% urban popuulation, the mean number of total arrests was 199.16. For above 50%, it was 200.6, which is very similar. Based on these means, it doesn't seem that percent urban population has a big effect on the number of crimes committed.
+
+
+# Visualizing 
+
+## Plot 1: 
+
+```{R}
+
+ggplot(data = fulljoin, aes(x = Total_Crime, y = HS_Grad, color = Region)) + geom_point(size = 4) + ggtitle("Total Crime and High School Graduation Rates by Region") + scale_x_continuous(name = "Total Crimes per 100,000 People", breaks = seq(25, 400, 50)) + ylab("Percent High School Graduation Rate") + geom_smooth(method="lm")
+
+```
+
+This plot was generated by plotting percent of high school graduates for each state versus the total crimes per 100,000 people in that same state. The dots are colored by region, in order to better see trends based on geographical area, and best fit lines are fit to the data based on region. This graph shows that there doesn't seem to be any linear relationship between percent high school graduates and total number of crimes, as the slopes of the best fit lines are mostly horizontal. However, it is worth noting that the South has less less percent high school graduates compared to the rest of the country, and that the West seems have the highest percentage of people who completed a high school education. 
+
+## Plot 2:
+
+```{R}
+
+ggplot(fulljoin, aes(x = Region, y = Arrests, fill = Region)) + geom_bar(stat="summary",fun.y="mean") + geom_errorbar(stat="summary") + facet_wrap(~Crime_Type) + coord_flip() + scale_fill_brewer() + ggtitle("Arrests For Each Region, Faceted by Type of Crime") + xlab("Number of Arrests") + ylab("Region")
+
+```
+
+This plot was generated by plotting the region versus the number of crimes committed in that region. The plot was faceted by type of crime in order to see if there were any relationships between the region and the type of crime that was most common. It appears that across the board, the most common type of crime committed is assault, followed by rape and then murder. The South seems to have the highest number of assaults and murder compared to the other regions, but the West has the higest number of rapes among all the regions. The standard deviation bars for the assaults graph are much larger than the bars in the murder and rape graphs, probably due to the much lower frequency of murders and rapes. 
+
+# Dimensionality Reduction -- PCA
+
+```{R}
+
+fulljoin_pca <- fulljoin %>% select(-Region, -Crime_Type)
+fulljoin_pca$state = as.numeric(as.factor(fulljoin_pca$state))
+fulljoin_nums <- fulljoin_pca %>% select_if(is.numeric) %>% scale()
+rownames(fulljoin_nums) <- fulljoin$state
+state_pca <- princomp(fulljoin_nums)
+names(state_pca)
+
+summary(state_pca, loadings = T)
+
+```
+
+PCA was performed on all the numeric variables of the dataset fulljoin. Since there was a problem and "state" kept being added back into the dataset, state was converted into a numeric variable and should be discarded. PC1 doesn't take into account Urban_Pop, while PC2 doesn't take into account illiteracy or life expectancy. Along the PC1's axis, it seems that life expectancy and percent high school graduates negatively correlate with illiteracy, total arrests / crime, and population. This seems to indicate that states with higher life expectancy and education have less illiteracy and total arrests.
+
+``` {R}
+
+# to find out how many to retain
+eigens <- state_pca$sdev^2
+view(eigens)
+variation_of_proportion <- round(eigens/sum(eigens),2)
+
+ggplot() + geom_bar(aes(y=variation_of_proportion,x=1:11),stat="identity")+xlab("")+geom_path(aes(y=variation_of_proportion,x=1:11))+
+ geom_text(aes(x=1:11,y=variation_of_proportion,label=round(variation_of_proportion,2)),vjust=1,size=5)+
+ scale_y_continuous(breaks=seq(0,.6),labels = scales::percent)+
+ scale_x_continuous(breaks=1:11)
+
+```
+
+The plot above was used to show how many principal components to retain. Since there is a not a clear defined elbow, 3 PCs should be retained because those eigenvalues are above 1. 
+
+```{R}
+
+# loadings graph
+state_pca$loadings[1:11,1:2] %>% 
+  as.data.frame %>% 
+  rownames_to_column %>%
+  ggplot() + geom_hline(aes(yintercept=0),lty=2) + geom_vline(aes(xintercept=0),lty=2) + ylab("PC2") + xlab("PC1")+ geom_segment(aes(x=0,y=0,xend=Comp.1,yend=Comp.2),arrow=arrow(),col="red")+
+ geom_label(aes(x=Comp.1*1.1,y=Comp.2*1.1,label=rowname))
+
+```
+
+This plot above shows how much each arrow contributes to PC1 and PC2. Some variables, like illiteracy and life expectancy, barely contribute to PC2. Area and urban population don't contribute that much to PC1. Along PC1, life expectancy, income, and percent of high school graudates seem to be negatively correlated with population and total crime (and by extension, arrests).
+

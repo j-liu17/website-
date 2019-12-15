@@ -17,7 +17,10 @@
       <pubDate>Sun, 02 Oct 2016 22:55:05 -0400</pubDate>
       
       <guid>/projects/</guid>
-      <description></description>
+      <description>Projects Here are some projects I have been working on! Enjoy :)
+  Project 1
+  Project 2
+  </description>
     </item>
     
     <item>
@@ -74,6 +77,24 @@ Follow the following steps:
       <description>Move static content to static Jekyll has a rule that any directory not starting with _ will be copied as-is to the _site output. Hugo keeps all static content under static. You should therefore move it all there. With Jekyll, something that looked like
 ▾ &amp;lt;root&amp;gt;/ ▾ images/ logo.png  should become
 ▾ &amp;lt;root&amp;gt;/ ▾ static/ ▾ images/ logo.png  Additionally, you&#39;ll want any files that should reside at the root (such as CNAME) to be moved to static.</description>
+    </item>
+    
+    <item>
+      <title>SDS 348 Project 1: Exploratory Data Analysis</title>
+      <link>/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project1/</guid>
+      <description>IntroductionFor my Exploratory Data Analysis, I decided to analyze how crime statistics in states may be affected by certain variables. The first dataset I chose was the state.x77 dataset from the carData package. This dataset contains all 50 states and gives various statistics for each one, including population estimates, per capita income, life expectancy, percent of high school graduates, and land area. The second dataset I chose was the USArrests dataset from the datasets package.</description>
+    </item>
+    
+    <item>
+      <title>SDS 348 Project 2: Modeling</title>
+      <link>/project2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project2/</guid>
+      <description>IntroductionFor my second project, I decided to take a look at the dataset Arrests, found in the carData package. This dataset contains data about individuals who were arrested in Toronto for possession of marijuana. For each individual arrested, there are variables detailing the individual’s race, age, sex, employment status, whether or not they are a citizen, the year they were arrested, the number of police databases on which the arrestee’s name appeared, and whether they were released or not.</description>
     </item>
     
   </channel>

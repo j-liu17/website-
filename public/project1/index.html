@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Joy Liu" />
+    <meta name="description" content="This is my website! Welcome">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>SDS 348 Project 1: Exploratory Data Analysis</title>
+    <meta name="generator" content="Hugo 0.61.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project1/">SDS 348 Project 1: Exploratory Data Analysis</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          January 1, 0001
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>For my Exploratory Data Analysis, I decided to analyze how crime statistics in states may be affected by certain variables. The first dataset I chose was the state.x77 dataset from the carData package. This dataset contains all 50 states and gives various statistics for each one, including population estimates, per capita income, life expectancy, percent of high school graduates, and land area. The second dataset I chose was the USArrests dataset from the datasets package. USArrests contains for each state the number of arrests per 100,000 people for murder, assault, and rape. It also contains the percent urban population for each state. I also decided to include a third dataset called state.region, also from the carData package, which just gives the region of the United States each state is in.</p>
+<p>These datasets were interesting to me because I wanted to see if education, region, and other factors would affect the amount of crime and the types of crimes committed in each state. I would expect that the percent urban population, rate of illiteracy, and percent of high school graduates are all correlated with higher amounts of crime. However, I am not sure whether they will have any effect on the type of crime committed. I also do not know if there will be differences based on region.</p>
+<pre class="r"><code>library(tidyverse)
+library(ggplot2)
+
+# general state data (pop, live exp, illiteracy, murder)
+library(carData)
+state_gen &lt;- state.x77
+
+# state arrest data
+library(datasets)
+arrestdata &lt;- USArrests
+
+# state region data
+regiondata &lt;- state.region</code></pre>
+</div>
+<div id="tidying" class="section level1">
+<h1>Tidying</h1>
+<pre class="r"><code># convert state_gen into a dataframe and make row names
+# column
+state_gen &lt;- as.data.frame(state_gen)
+statedata &lt;- state_gen %&gt;% rownames_to_column(&quot;state&quot;)
+
+# remove murders from statedata because arrestdata will have
+# murders
+statedata &lt;- statedata %&gt;% select(-Murder)
+
+# make arrestdata row names to column
+arrestdata &lt;- arrestdata %&gt;% rownames_to_column(&quot;state&quot;)
+
+# make regiondata a dataframe and give it states (it only had
+# statistics, no labels)
+regiondata &lt;- as.data.frame(regiondata)
+regiondata &lt;- regiondata %&gt;% mutate(state = statedata$state)
+regiondata &lt;- regiondata %&gt;% rename(region = regiondata)
+
+# tidying arrestdata
+arrest_tidy &lt;- arrestdata %&gt;% pivot_longer(cols = c(&quot;Murder&quot;, 
+    &quot;Assault&quot;, &quot;Rape&quot;), names_to = &quot;Crime_Type&quot;, values_to = &quot;Arrests&quot;) %&gt;% 
+    rename(Urban_Pop = UrbanPop) %&gt;% mutate(Urban_Pop = as.numeric(Urban_Pop))
+glimpse(arrest_tidy)</code></pre>
+<pre><code>## Observations: 150
+## Variables: 4
+## $ state      &lt;chr&gt; &quot;Alabama&quot;, &quot;Alabama&quot;, &quot;Alabama&quot;, &quot;Alaska&quot;, &quot;Alaska&quot;...
+## $ Urban_Pop  &lt;dbl&gt; 58, 58, 58, 48, 48, 48, 80, 80, 80, 50, 50, 50, 91,...
+## $ Crime_Type &lt;chr&gt; &quot;Murder&quot;, &quot;Assault&quot;, &quot;Rape&quot;, &quot;Murder&quot;, &quot;Assault&quot;, &quot;...
+## $ Arrests    &lt;dbl&gt; 13.2, 236.0, 21.2, 10.0, 263.0, 44.5, 8.1, 294.0, 3...</code></pre>
+<pre class="r"><code># untidying and tidying statedata
+state_untidy &lt;- statedata %&gt;% pivot_longer(c(&quot;Population&quot;, &quot;Income&quot;), 
+    names_to = &quot;Statistic&quot;, values_to = &quot;Value&quot;)
+state_tidy &lt;- state_untidy %&gt;% pivot_wider(names_from = &quot;Statistic&quot;, 
+    values_from = &quot;Value&quot;)
+state_tidy &lt;- state_tidy %&gt;% rename(Life_Exp = &quot;Life Exp&quot;, HS_Grad = &quot;HS Grad&quot;)
+glimpse(state_tidy)</code></pre>
+<pre><code>## Observations: 50
+## Variables: 8
+## $ state      &lt;chr&gt; &quot;Alabama&quot;, &quot;Alaska&quot;, &quot;Arizona&quot;, &quot;Arkansas&quot;, &quot;Califo...
+## $ Illiteracy &lt;dbl&gt; 2.1, 1.5, 1.8, 1.9, 1.1, 0.7, 1.1, 0.9, 1.3, 2.0, 1...
+## $ Life_Exp   &lt;dbl&gt; 69.05, 69.31, 70.55, 70.66, 71.71, 72.06, 72.48, 70...
+## $ HS_Grad    &lt;dbl&gt; 41.3, 66.7, 58.1, 39.9, 62.6, 63.9, 56.0, 54.6, 52....
+## $ Frost      &lt;dbl&gt; 20, 152, 15, 65, 20, 166, 139, 103, 11, 60, 0, 126,...
+## $ Area       &lt;dbl&gt; 50708, 566432, 113417, 51945, 156361, 103766, 4862,...
+## $ Population &lt;dbl&gt; 3615, 365, 2212, 2110, 21198, 2541, 3100, 579, 8277...
+## $ Income     &lt;dbl&gt; 3624, 6315, 4530, 3378, 5114, 4884, 5348, 4809, 481...</code></pre>
+<pre class="r"><code># untidying and tidying regiondata
+region_untidy &lt;- regiondata %&gt;% pivot_wider(names_from = &quot;state&quot;, 
+    values_from = &quot;region&quot;)
+region_tidy &lt;- region_untidy %&gt;% pivot_longer(c(1:50), names_to = &quot;state&quot;, 
+    values_to = &quot;Region&quot;)
+glimpse(region_tidy)</code></pre>
+<pre><code>## Observations: 50
+## Variables: 2
+## $ state  &lt;chr&gt; &quot;Alabama&quot;, &quot;Alaska&quot;, &quot;Arizona&quot;, &quot;Arkansas&quot;, &quot;California...
+## $ Region &lt;fct&gt; South, West, West, South, West, West, Northeast, South,...</code></pre>
+<p>In order to tidy my data, I first had to convert the state info dataset (state_gen) into a dataframe, because it was originally a matrix. Then, for both arrestdata and state_gen, I had to convert the row names, which were the states, into a column called “state” so I could work with them easier. I also removed the “Murders” column from statedata, as the other dataset already provided data on murders from a different year and I didn’t want the two to conflict when I did a join. regiondata only contained a list of regions corresponding to the states in alphabetical order, so I had to create a new column with the states using mutate() so I could merge the datasets later on. I also had to convert regiondata from a matrix to a data frame.</p>
+<p>For tidying arrestdata, I used pivot_longer() to create a variable called “crimetype” so that there weren’t too many variables in columns that could be in just one column. For statedata and regiondata, the datasets were already tidy, so I used pivot_wider() to make the datasets unnecessarily untidy and hard to read, and pivot_longer() to make the datasets tidy again.</p>
+</div>
+<div id="joining-merging" class="section level1">
+<h1>Joining / Merging</h1>
+<pre class="r"><code>fulljoin_1 &lt;- full_join(region_tidy, state_tidy, by = &quot;state&quot;)
+fulljoin &lt;- full_join(fulljoin_1, arrest_tidy, by = &quot;state&quot;)
+glimpse(fulljoin)</code></pre>
+<pre><code>## Observations: 150
+## Variables: 12
+## $ state      &lt;chr&gt; &quot;Alabama&quot;, &quot;Alabama&quot;, &quot;Alabama&quot;, &quot;Alaska&quot;, &quot;Alaska&quot;...
+## $ Region     &lt;fct&gt; South, South, South, West, West, West, West, West, ...
+## $ Illiteracy &lt;dbl&gt; 2.1, 2.1, 2.1, 1.5, 1.5, 1.5, 1.8, 1.8, 1.8, 1.9, 1...
+## $ Life_Exp   &lt;dbl&gt; 69.05, 69.05, 69.05, 69.31, 69.31, 69.31, 70.55, 70...
+## $ HS_Grad    &lt;dbl&gt; 41.3, 41.3, 41.3, 66.7, 66.7, 66.7, 58.1, 58.1, 58....
+## $ Frost      &lt;dbl&gt; 20, 20, 20, 152, 152, 152, 15, 15, 15, 65, 65, 65, ...
+## $ Area       &lt;dbl&gt; 50708, 50708, 50708, 566432, 566432, 566432, 113417...
+## $ Population &lt;dbl&gt; 3615, 3615, 3615, 365, 365, 365, 2212, 2212, 2212, ...
+## $ Income     &lt;dbl&gt; 3624, 3624, 3624, 6315, 6315, 6315, 4530, 4530, 453...
+## $ Urban_Pop  &lt;dbl&gt; 58, 58, 58, 48, 48, 48, 80, 80, 80, 50, 50, 50, 91,...
+## $ Crime_Type &lt;chr&gt; &quot;Murder&quot;, &quot;Assault&quot;, &quot;Rape&quot;, &quot;Murder&quot;, &quot;Assault&quot;, &quot;...
+## $ Arrests    &lt;dbl&gt; 13.2, 236.0, 21.2, 10.0, 263.0, 44.5, 8.1, 294.0, 3...</code></pre>
+<p>I used full_join() to first join region_tidy and state_tidy by “state”, which both datasets have in common. I then joined that intermediate dataset with arrest_tidy, again by “state”, to create my final, full dataset. No cases were dropped, and subsequently I did not have to omit any NAs. I chose full_join() because the variables in my three datasets were very different and I didn’t want to lose any of them; I wanted to retain all of my data.</p>
+</div>
+<div id="wrangling" class="section level1">
+<h1>Wrangling</h1>
+<div id="total-arrests-per-100000-people-per-state" class="section level3">
+<h3>Total arrests per 100,000 people per state</h3>
+<pre class="r"><code>fulljoin &lt;- fulljoin %&gt;% group_by(state) %&gt;% mutate(Total_Crime = sum(Arrests))
+
+fulljoin %&gt;% summarize(meantotalcrime = mean(Total_Crime)) %&gt;% 
+    summarize(mean2 = mean(meantotalcrime))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   mean2
+##   &lt;dbl&gt;
+## 1  200.</code></pre>
+</div>
+<div id="most-and-least-educated-states-by-high-school-graduation-rate" class="section level3">
+<h3>Most and least educated states by high school graduation rate</h3>
+<pre class="r"><code>education &lt;- fulljoin %&gt;% select(state, HS_Grad) %&gt;% arrange(HS_Grad) %&gt;% 
+    distinct() %&gt;% glimpse()</code></pre>
+<pre><code>## Observations: 50
+## Variables: 2
+## Groups: state [50]
+## $ state   &lt;chr&gt; &quot;South Carolina&quot;, &quot;Kentucky&quot;, &quot;North Carolina&quot;, &quot;Arkan...
+## $ HS_Grad &lt;dbl&gt; 37.8, 38.5, 38.5, 39.9, 40.6, 41.0, 41.3, 41.6, 41.8, ...</code></pre>
+<pre class="r"><code>education &lt;- education %&gt;% slice(1, n())</code></pre>
+<p>I first used mutate() to calculate the total number of arrests (rape, assault, and murder) per 100,000 people for each state by simply adding all the arrests for each state together. I then piped my new dataset into summarize twice to find the mean number of crimes per state, which was 199.78 crimes per 100,000 people. I also wanted to find the most and least educated states, based on their high school graduation rate. to do this, I took fulljoin and selected the states and their high school graduation rates, arranged from lowest to highest based on graduation rate, removed duplicates, and sliced it, taking the minimum and the maximum. The least educated state based on percentage of high school graduates is South Carolina, while the most educated state is Utah.</p>
+</div>
+<div id="summary-statistics-mean-sd-by-region" class="section level3">
+<h3>Summary statistics (mean, sd) by region</h3>
+<pre class="r"><code>summary_stats_region &lt;- fulljoin %&gt;% group_by(Region) %&gt;% summarize(meanlife = mean(Life_Exp), 
+    sdlife = sd(Life_Exp), meancrime = mean(Total_Crime), sdcrime = sd(Total_Crime)) %&gt;% 
+    glimpse()</code></pre>
+<pre><code>## Observations: 4
+## Variables: 5
+## $ Region    &lt;fct&gt; Northeast, South, North Central, West
+## $ meanlife  &lt;dbl&gt; 71.26444, 69.70625, 71.76667, 71.23462
+## $ sdlife    &lt;dbl&gt; 0.7146938, 1.0002141, 1.0066720, 1.3159124
+## $ meancrime &lt;dbl&gt; 145.1444, 252.8688, 144.4750, 223.3154
+## $ sdcrime   &lt;dbl&gt; 69.23072, 77.77368, 79.93149, 89.07484</code></pre>
+</div>
+<div id="summary-statistics-for-each-type-of-crime" class="section level3">
+<h3>Summary statistics for each type of crime</h3>
+<pre class="r"><code>summary_stats_crime_type &lt;- fulljoin %&gt;% select(Crime_Type, Arrests) %&gt;% 
+    group_by(Crime_Type) %&gt;% summarize(meancrime = mean(Arrests), 
+    sdcrime = sd(Arrests)) %&gt;% glimpse()</code></pre>
+<pre><code>## Observations: 3
+## Variables: 3
+## $ Crime_Type &lt;chr&gt; &quot;Assault&quot;, &quot;Murder&quot;, &quot;Rape&quot;
+## $ meancrime  &lt;dbl&gt; 170.760, 7.788, 21.232
+## $ sdcrime    &lt;dbl&gt; 83.337661, 4.355510, 9.366385</code></pre>
+</div>
+<div id="urban-population-and-average-crime-rates" class="section level3">
+<h3>Urban population and average crime rates</h3>
+<pre class="r"><code># for states with more than 50% urban population, what&#39;s the
+# average crimes/100k people vs states with less than 50%?
+
+summary_morethan &lt;- fulljoin %&gt;% select(Urban_Pop, Total_Crime) %&gt;% 
+    filter(Urban_Pop &gt; 50) %&gt;% summarize(morethan50mean = mean(Total_Crime)) %&gt;% 
+    summarize(morethan50mean1 = mean(morethan50mean)) %&gt;% glimpse()</code></pre>
+<pre><code>## Observations: 1
+## Variables: 1
+## $ morethan50mean1 &lt;dbl&gt; 199.1683</code></pre>
+<pre class="r"><code>summary_lessthan &lt;- fulljoin %&gt;% select(Urban_Pop, Total_Crime) %&gt;% 
+    filter(Urban_Pop &lt; 50) %&gt;% summarize(lessthan50mean = mean(Total_Crime)) %&gt;% 
+    summarize(lessthan50mean1 = mean(lessthan50mean)) %&gt;% glimpse()</code></pre>
+<pre><code>## Observations: 1
+## Variables: 1
+## $ lessthan50mean1 &lt;dbl&gt; 200.6</code></pre>
+<p>I grouped by region of the United States and then calculated the mean and standard deviation of life expectancy and total crime. I found it interesting that the South has, on average, a lower mean life expectancy than the other three regions, which all are around 71 years. The standard deviations for life expectancy were quite small thogh, all about one year. Additionally, the South and the West have much higher crime rates than the Northeast and North Central areas of the country. However, those standard deviations were much higher (a range of 69-80 arrests). I was interested to see the mean number of assaults, murders, and rapes across the country. According to the summary statistics generated, assaults are the most common type of crime compared to murder and rape, with rape being the second most common and murder the least common. There is a huge disparity between the number of assults and the numbers of murders and rapes. The standard deviation for number of assaults per state is quite large (~83), but much smaller for murders and rapes. Finally, I wanted to see whether percent urban population had an effect on whether total crime was high or not. I filtered by urban populations that were under 50% and urban populations that were above 50% and found the mean total arrests for each grouping. For under 50% urban popuulation, the mean number of total arrests was 199.16. For above 50%, it was 200.6, which is very similar. Based on these means, it doesn’t seem that percent urban population has a big effect on the number of crimes committed.</p>
+</div>
+</div>
+<div id="visualizing" class="section level1">
+<h1>Visualizing</h1>
+<div id="plot-1" class="section level2">
+<h2>Plot 1:</h2>
+<pre class="r"><code>ggplot(data = fulljoin, aes(x = Total_Crime, y = HS_Grad, color = Region)) + 
+    geom_point(size = 4) + ggtitle(&quot;Total Crime and High School Graduation Rates by Region&quot;) + 
+    scale_x_continuous(name = &quot;Total Crimes per 100,000 People&quot;, 
+        breaks = seq(25, 400, 50)) + ylab(&quot;Percent High School Graduation Rate&quot;) + 
+    geom_smooth(method = &quot;lm&quot;)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>This plot was generated by plotting percent of high school graduates for each state versus the total crimes per 100,000 people in that same state. The dots are colored by region, in order to better see trends based on geographical area, and best fit lines are fit to the data based on region. This graph shows that there doesn’t seem to be any linear relationship between percent high school graduates and total number of crimes, as the slopes of the best fit lines are mostly horizontal. However, it is worth noting that the South has less less percent high school graduates compared to the rest of the country, and that the West seems have the highest percentage of people who completed a high school education.</p>
+</div>
+<div id="plot-2" class="section level2">
+<h2>Plot 2:</h2>
+<pre class="r"><code>ggplot(fulljoin, aes(x = Region, y = Arrests, fill = Region)) + 
+    geom_bar(stat = &quot;summary&quot;, fun.y = &quot;mean&quot;) + geom_errorbar(stat = &quot;summary&quot;) + 
+    facet_wrap(~Crime_Type) + coord_flip() + scale_fill_brewer() + 
+    ggtitle(&quot;Arrests For Each Region, Faceted by Type of Crime&quot;) + 
+    xlab(&quot;Number of Arrests&quot;) + ylab(&quot;Region&quot;)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>This plot was generated by plotting the region versus the number of crimes committed in that region. The plot was faceted by type of crime in order to see if there were any relationships between the region and the type of crime that was most common. It appears that across the board, the most common type of crime committed is assault, followed by rape and then murder. The South seems to have the highest number of assaults and murder compared to the other regions, but the West has the higest number of rapes among all the regions. The standard deviation bars for the assaults graph are much larger than the bars in the murder and rape graphs, probably due to the much lower frequency of murders and rapes.</p>
+</div>
+</div>
+<div id="dimensionality-reduction-pca" class="section level1">
+<h1>Dimensionality Reduction – PCA</h1>
+<pre class="r"><code>fulljoin_pca &lt;- fulljoin %&gt;% select(-Region, -Crime_Type)
+fulljoin_pca$state = as.numeric(as.factor(fulljoin_pca$state))
+fulljoin_nums &lt;- fulljoin_pca %&gt;% select_if(is.numeric) %&gt;% scale()
+rownames(fulljoin_nums) &lt;- fulljoin$state
+state_pca &lt;- princomp(fulljoin_nums)
+names(state_pca)</code></pre>
+<pre><code>## [1] &quot;sdev&quot;     &quot;loadings&quot; &quot;center&quot;   &quot;scale&quot;    &quot;n.obs&quot;    &quot;scores&quot;  
+## [7] &quot;call&quot;</code></pre>
+<pre class="r"><code>summary(state_pca, loadings = T)</code></pre>
+<pre><code>## Importance of components:
+##                           Comp.1    Comp.2    Comp.3     Comp.4     Comp.5
+## Standard deviation     1.8323064 1.5616450 1.1869958 0.96860557 0.91885134
+## Proportion of Variance 0.3072618 0.2231911 0.1289468 0.08586303 0.07726856
+## Cumulative Proportion  0.3072618 0.5304529 0.6593997 0.74526273 0.82253129
+##                            Comp.6     Comp.7     Comp.8     Comp.9
+## Standard deviation     0.79561411 0.70571171 0.55509325 0.50522607
+## Proportion of Variance 0.05793183 0.04557923 0.02819968 0.02336059
+## Cumulative Proportion  0.88046312 0.92604235 0.95424203 0.97760262
+##                           Comp.10     Comp.11
+## Standard deviation     0.39054579 0.303648939
+## Proportion of Variance 0.01395906 0.008438317
+## Cumulative Proportion  0.99156168 1.000000000
+## 
+## Loadings:
+##             Comp.1 Comp.2 Comp.3 Comp.4 Comp.5 Comp.6 Comp.7 Comp.8 Comp.9
+## state               0.298  0.203  0.668  0.382  0.370  0.317  0.123  0.107
+## Illiteracy  -0.482               -0.189         0.303         0.358 -0.416
+## Life_Exp     0.426         0.281 -0.207 -0.171  0.421 -0.210              
+## HS_Grad      0.417 -0.285 -0.155                0.210  0.276 -0.456       
+## Frost        0.380  0.181 -0.269  0.284        -0.488               -0.597
+## Area               -0.260 -0.615         0.400  0.407 -0.249        -0.193
+## Population  -0.128 -0.363  0.402  0.276  0.343 -0.175 -0.597 -0.234       
+## Income       0.277 -0.449 -0.126               -0.168         0.720  0.363
+## Urban_Pop          -0.489  0.413                       0.380        -0.510
+## Arrests     -0.172 -0.187 -0.161  0.550 -0.724  0.201 -0.194              
+## Total_Crime -0.364 -0.344 -0.176  0.111        -0.217  0.417 -0.246  0.131
+##             Comp.10 Comp.11
+## state                      
+## Illiteracy           0.572 
+## Life_Exp     0.651   0.104 
+## HS_Grad     -0.350   0.512 
+## Frost        0.164   0.206 
+## Area                -0.349 
+## Population           0.229 
+## Income               0.130 
+## Urban_Pop   -0.160  -0.389 
+## Arrests                    
+## Total_Crime  0.623   0.119</code></pre>
+<p>PCA was performed on all the numeric variables of the dataset fulljoin. Since there was a problem and “state” kept being added back into the dataset, state was converted into a numeric variable and should be discarded. PC1 doesn’t take into account Urban_Pop, while PC2 doesn’t take into account illiteracy or life expectancy. Along the PC1’s axis, it seems that life expectancy and percent high school graduates negatively correlate with illiteracy, total arrests / crime, and population. This seems to indicate that states with higher life expectancy and education have less illiteracy and total arrests.</p>
+<pre class="r"><code># to find out how many to retain
+eigens &lt;- state_pca$sdev^2
+view(eigens)
+variation_of_proportion &lt;- round(eigens/sum(eigens), 2)
+
+ggplot() + geom_bar(aes(y = variation_of_proportion, x = 1:11), 
+    stat = &quot;identity&quot;) + xlab(&quot;&quot;) + geom_path(aes(y = variation_of_proportion, 
+    x = 1:11)) + geom_text(aes(x = 1:11, y = variation_of_proportion, 
+    label = round(variation_of_proportion, 2)), vjust = 1, size = 5) + 
+    scale_y_continuous(breaks = seq(0, 0.6), labels = scales::percent) + 
+    scale_x_continuous(breaks = 1:11)</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-12-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>The plot above was used to show how many principal components to retain. Since there is a not a clear defined elbow, 3 PCs should be retained because those eigenvalues are above 1.</p>
+<pre class="r"><code># loadings graph
+state_pca$loadings[1:11, 1:2] %&gt;% as.data.frame %&gt;% rownames_to_column %&gt;% 
+    ggplot() + geom_hline(aes(yintercept = 0), lty = 2) + geom_vline(aes(xintercept = 0), 
+    lty = 2) + ylab(&quot;PC2&quot;) + xlab(&quot;PC1&quot;) + geom_segment(aes(x = 0, 
+    y = 0, xend = Comp.1, yend = Comp.2), arrow = arrow(), col = &quot;red&quot;) + 
+    geom_label(aes(x = Comp.1 * 1.1, y = Comp.2 * 1.1, label = rowname))</code></pre>
+<p><img src="/Project1_files/figure-html/unnamed-chunk-13-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>This plot above shows how much each arrow contributes to PC1 and PC2. Some variables, like illiteracy and life expectancy, barely contribute to PC2. Area and urban population don’t contribute that much to PC1. Along PC1, life expectancy, income, and percent of high school graudates seem to be negatively correlated with population and total crime (and by extension, arrests).</p>
+</div>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>
