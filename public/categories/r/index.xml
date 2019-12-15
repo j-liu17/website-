@@ -6,17 +6,26 @@
     <description>Recent content in R on Joy Liu</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Thu, 23 Jul 2015 21:13:14 -0500</lastBuildDate>
+    <lastBuildDate>Sun, 15 Dec 2019 21:13:14 -0500</lastBuildDate>
     
 	<atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>About Me</title>
-      <link>/blog/2015-07-23-r-rmarkdown/</link>
-      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
+      <link>/aboutresume/</link>
+      <pubDate>Sun, 15 Dec 2019 21:13:14 -0500</pubDate>
       
-      <guid>/blog/2015-07-23-r-rmarkdown/</guid>
+      <guid>/aboutresume/</guid>
+      <description>About Me!My name is Joy! I was born in Dallas, Texas and I moved to Austin in 2016 for college. I graduated from the University of Texas at Austin with a Bachelor of Science and Arts in Biology and a certificate in Pre-Health Professions. I’m planning on attending the PA program at the University of Texas Medical Branch, starting in July 2020. I am really passionate about healthcare and also spreading education and awareness about current topics in medicine.</description>
+    </item>
+    
+    <item>
+      <title>About Me</title>
+      <link>/blog/aboutresume/</link>
+      <pubDate>Sun, 15 Dec 2019 21:13:14 -0500</pubDate>
+      
+      <guid>/blog/aboutresume/</guid>
       <description>About Me!My name is Joy! I was born in Dallas, Texas and I moved to Austin in 2016 for college. I graduated from the University of Texas at Austin with a Bachelor of Science and Arts in Biology and a certificate in Pre-Health Professions. I’m planning on attending the PA program at the University of Texas Medical Branch, starting in July 2020. I am really passionate about healthcare and also spreading education and awareness about current topics in medicine.</description>
     </item>
     

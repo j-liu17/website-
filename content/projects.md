@@ -10,7 +10,7 @@ title: Projects
 
 ## Projects 
 
-Here are some projects I have been working on! Enjoy :)
+Here are some projects I have been working on in my SDS348 class! Enjoy :)
 
 - [Project 1](/Project1/)
 

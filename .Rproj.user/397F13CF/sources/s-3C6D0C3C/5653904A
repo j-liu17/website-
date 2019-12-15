@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1576393801905.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "5653904A",
+    "lastKnownWriteTime" : 1576393923,
+    "last_content_update" : 1576393923716,
+    "path" : "C:/Users/Joy Liu/Desktop/website/content/blog/2019-12-15-pythonstuff.Rmd",
+    "project_path" : "content/blog/2019-12-15-pythonstuff.Rmd",
+    "properties" : {
+        "cursorPosition" : "1,8",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

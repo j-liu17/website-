@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>python on Joy Liu</title>
+    <link>/tags/python/</link>
+    <description>Recent content in python on Joy Liu</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Sun, 15 Dec 2019 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/python/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>What I&#39;ve Been Learning in Python</title>
+      <link>/blog/what-i-ve-been-learning-in-python/</link>
+      <pubDate>Sun, 15 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/what-i-ve-been-learning-in-python/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>What I&#39;ve Been Learning in Python</title>
+      <link>/blog/what-i-ve-been-learning-in-python/</link>
+      <pubDate>Sun, 15 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/what-i-ve-been-learning-in-python/</guid>
+      <description>Though the majority of SDS 348 was focused on getting more comfortable with R, I learned some Python at the end. Though I had already learned some Python in previous coding classes, I had never learned about regex (regular expressions) before. This method of finding parts in strings was really interesting to me!
+Here’s an example of what we did in our homeworks:
+Using re.findall(), match all numbers and pull them from the following string (string1).</description>
+    </item>
+    
+  </channel>
+</rss>
