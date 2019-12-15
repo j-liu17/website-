@@ -23,19 +23,11 @@ Though the majority of SDS 348 was focused on getting more comfortable with R, I
 
 Here's an example of what we did in our homeworks:
 
-Using re.findall(), match all numbers and pull them from the following string (string1). Your results should look like this.
-['12',
- '47',
- '48',
- '189',
- '2036',
- '314',
- '125',
- '789',
- '1450',
- '564',
- '90456',
- '7890']
+```{r knitr-logo, fig.show='hold'}
+knitr::include_graphics(rep('/img/q1.jpg'))
+
+```
+
 
 ```{python 3}
 
@@ -47,4 +39,4 @@ re.findall(r"\d+", string1)
 
 ```
 
-
+We also did many more examples where we had to find IP addresses and websites from other strings. Finally, we got to find restriction enzyme sequences in a stretch of nucleotides, which is useful for biology purposes!

@@ -37,7 +37,7 @@
       <guid>/blog/pythonstuff/</guid>
       <description>Though the majority of SDS 348 was focused on getting more comfortable with R, I learned some Python at the end. Though I had already learned some Python in previous coding classes, I had never learned about regex (regular expressions) before. This method of finding parts in strings was really interesting to me!
 Here’s an example of what we did in our homeworks:
-Using re.findall(), match all numbers and pull them from the following string (string1).</description>
+knitr::include_graphics(rep(&amp;#39;/img/q1.jpg&amp;#39;))import restring1=&amp;quot;We have to extract these numbers 12, 47, 48 The integers numbers are also interesting: 189 2036 314\&amp;#39;,\&amp;#39; is a separator, so please extract these numbers 125,789,1450 and also these 564,90456 We like to offer you 7890$ per month in order to complete this task.</description>
     </item>
     
     <item>

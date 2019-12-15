@@ -12,19 +12,8 @@ description: ''
 
 <p>Though the majority of SDS 348 was focused on getting more comfortable with R, I learned some Python at the end. Though I had already learned some Python in previous coding classes, I had never learned about regex (regular expressions) before. This method of finding parts in strings was really interesting to me!</p>
 <p>Here’s an example of what we did in our homeworks:</p>
-<p>Using re.findall(), match all numbers and pull them from the following string (string1). Your results should look like this.
-[‘12’,
-‘47’,
-‘48’,
-‘189’,
-‘2036’,
-‘314’,
-‘125’,
-‘789’,
-‘1450’,
-‘564’,
-‘90456’,
-‘7890’]</p>
+<pre class="r"><code>knitr::include_graphics(rep(&#39;/img/q1.jpg&#39;))</code></pre>
+<p><img src="/img/q1.jpg" /><!-- --></p>
 <pre class="python"><code>
 import re
 
@@ -32,3 +21,4 @@ string1=&quot;We have to extract these numbers 12, 47, 48 The integers numbers a
 
 re.findall(r&quot;\d+&quot;, string1)</code></pre>
 <pre><code>## [&#39;12&#39;, &#39;47&#39;, &#39;48&#39;, &#39;189&#39;, &#39;2036&#39;, &#39;314&#39;, &#39;125&#39;, &#39;789&#39;, &#39;1450&#39;, &#39;564&#39;, &#39;90456&#39;, &#39;7890&#39;]</code></pre>
+<p>We also did many more examples where we had to find IP addresses and websites from other strings. Finally, we got to find restriction enzyme sequences in a stretch of nucleotides, which is useful for biology purposes!</p>
